@@ -1,0 +1,47 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: ansible-molecule
+  annotations:
+    tekton.dev/displayName: Ansible Molecule Test Tekton task
+    tekton.dev/pipelines.minVersion: 0.37.4
+    tekton.dev/tags: ansible,test,molecule,qa
+  labels:
+    app.kubernetes.io/version: "0.1"
+    operator.tekton.dev/provider-type: Red Hat Community
+spec:
+  description: Tekton task for running molecule test for ansible manifests.
+  workspaces:
+    - name: source
+      description: A workspace that contains fetched git repo with ansible manifests defining elements to be tested.
+  params:
+    - name: context-directory
+      type: string
+      description: "Context directory within the source repository in which we want to execute molecule."
+      default: "."
+    - name: extra-args
+      type: string
+      description: "Extra parameters to pass to ansible linter"
+      default: ""
+    - name: image
+      description: image to use to execute this task
+      type: string
+      default: "quay.io/ansible/creator-ee"
+    - name: tag
+      type: string
+      description: The tag for the image.
+      default: "latest"
+  steps:
+    - name: ansible-molecule
+      image: $(params.image):$(params.tag)
+      env:
+        - name: HOME
+          value: /tekton/home
+      resources: {}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+      workingDir: $(workspaces.source.path)/$(params.context-directory)
+      script: |
+        #!/usr/bin/env sh
+        molecule test
