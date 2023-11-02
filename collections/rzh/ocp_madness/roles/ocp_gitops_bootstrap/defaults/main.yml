@@ -1,0 +1,11 @@
+---
+# ocp_gitops_operator_channel: OpenShift GitOps Operator subscription channel
+# ocp_gitops_operator_startingCSV: OpenShift GitOps Operator subscription version
+# ocp_gitrepos: OpenShift related GitLab repositories
+# ocp_gitrepo_ssh_private_key: SSH private key for GitLab authentication (it's a generic variable that will be used in multiple roles)
+# ocp_eso_startingCSV: External Secrets Operator subscription version
+# ocp_trusted_ca_bundle: OCP trusted ca bundle cert
+# ocp_automation_repo: Repository URL for ocp automation related software
+# ocp_cluster_config_repo: Cluster specific configuration repository URL
+# vault_server_addr: the server address of HashiCorp Vault
+# vault_role_id: the appRole id of HashiCorp Vault

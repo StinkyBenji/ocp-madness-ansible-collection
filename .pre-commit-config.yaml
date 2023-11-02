@@ -35,7 +35,7 @@ repos:
     rev: v3.0.3
     hooks:
       - id: prettier
-        files: \.(js|ts|jsx|tsx|css|less|html|json|markdown|md|yaml|yml)$
+        files: \.(js|json|yaml|yml)$
 
   - repo: https://github.com/adrienverge/yamllint
     rev: v1.23.0
@@ -43,3 +43,9 @@ repos:
       - id: yamllint
         files: \.(yaml|yml)$
         args: ["--format", "parsable", "--strict"]
+
+  - repo: https://github.com/ansible-community/ansible-lint.git
+    rev: v6.20.3
+    hooks:
+      - id: ansible-lint
+        files: \.(yaml|yml)$`

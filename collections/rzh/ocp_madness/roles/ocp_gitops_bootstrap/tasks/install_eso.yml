@@ -1,0 +1,59 @@
+---
+- name: Install external secrets operator
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: operators.coreos.com/v1alpha1
+      kind: Subscription
+      metadata:
+        name: external-secrets-operator
+        namespace: openshift-operators
+      spec:
+        channel: stable
+        installPlanApproval: Automatic
+        name: external-secrets-operator
+        source: community-operators
+        sourceNamespace: openshift-marketplace
+        startingCSV: "{{ ocp_eso_startingCSV }}"
+
+- name: Wait for the operator being installed successfully
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: Pod
+    namespace: openshift-operators
+    wait: true
+    field_selectors:
+      - spec.serviceAccountName=external-secrets-operator-controller-manager
+    wait_condition:
+      type: Ready
+    wait_timeout: 720
+
+- name: Create namespace for external secrets resources
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: external-secrets
+
+- name: Create OperatorConfig for deploying helm chart resources of ESO
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: operator.external-secrets.io/v1alpha1
+      kind: OperatorConfig
+      metadata:
+        name: external-secrets
+        namespace: external-secrets
+      spec: {}
+
+- name: Wait for all the resources for external secrets to be ready
+  kubernetes.core.k8s_info:
+    kind: Pod
+    api_version: v1
+    wait: true
+    namespace: external-secrets
+    wait_timeout: 720
+    wait_condition:
+      type: Ready

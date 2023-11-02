@@ -1,0 +1,9 @@
+---
+galaxy_info:
+  author: Rui Zhang
+  description: A Ansible role bootstraps OpenShift cluster
+  company: Red Hat
+  license: GPL-2.0-or-later
+  min_ansible_version: "2.14"
+  galaxy_tags: []
+dependencies: []

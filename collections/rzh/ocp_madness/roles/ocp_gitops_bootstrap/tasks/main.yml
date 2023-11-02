@@ -1,0 +1,9 @@
+---
+- name: Install External Secrets Operator
+  include_tasks: install_eso.yml
+- name: Install and configure OpenShift GitOps
+  include_tasks: install_configure_gitops_operator.yml
+- name: Initiate cluster bootstrapping
+  include_tasks: cluster_bootstrap.yml
+- name: Remove kubeadmin from cluster auth
+  include_tasks: rm_kubeadmin.yml

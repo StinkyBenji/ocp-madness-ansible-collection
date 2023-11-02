@@ -1,0 +1,66 @@
+---
+- name: Create trusted-ca configmap for vault-backend
+  kubernetes.core.k8s:
+    state: present
+    definition: "{{ lookup('template', 'trusted-ca.yaml.j2') }}"
+    apply: true
+    server_side_apply:
+      field_manager: ansible
+
+- name: Create cluster secret store
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: external-secrets.io/v1beta1
+      kind: ClusterSecretStore
+      metadata:
+        name: vault-backend
+      spec:
+        provider:
+          vault:
+            server: "{{ vault_server_addr }}"
+            path: ocp
+            version: v2
+            auth:
+              appRole:
+                path: approle
+                roleId: "{{ vault_role_id }}"
+                secretRef:
+                  name: vault-secret-id
+                  key: secret-id
+            caProvider:
+              type: ConfigMap
+              namespace: openshift-config
+              name: trusted-ca
+              key: ca-bundle.crt
+
+- name: Bootstrap the cluster configuration via ArgoCD
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: argoproj.io/v1alpha1
+      kind: Application
+      metadata:
+        name: cluster-config-manager
+        namespace: openshift-gitops
+      spec:
+        project: default
+        destination:
+          server: https://kubernetes.default.svc
+          namespace: openshift-gitops
+        sources:
+          - repoURL: "{{ ocp_automation_repo }}"
+            path: helm-charts/charts/argocd-app-of-apps
+            targetRevision: main
+            helm:
+              valueFiles:
+                - "{{ '$' }}{{ ocp_cluster_name }}/bootstrap/values.yaml"
+          - repoURL: "{{ ocp_cluster_config_repo }}"
+            ref: "{{ ocp_cluster_name }}"
+            targetRevision: main
+        syncPolicy:
+          automated:
+            selfHeal: true
+            prune: true
+          syncOptions:
+            - ServerSideApply=true

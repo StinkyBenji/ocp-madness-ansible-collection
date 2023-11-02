@@ -1,0 +1,15 @@
+---
+namespace: rzh
+name: ocp_madness
+version: 1.0.0
+readme: README.md
+authors:
+  - Rui Zhang
+description: A collection that configures GitOps on OpenShift.
+license:
+  - GPL-2.0-or-later
+tags: [OpenShift, GitOps]
+dependencies: {}
+repository: https://github.com/StinkyBenji/ocp-madness-ansible-collection
+homepage: https://github.com/StinkyBenji/ocp-madness-ansible-collection
+issues: https://github.com/StinkyBenji/ocp-madness-ansible-collection/issues

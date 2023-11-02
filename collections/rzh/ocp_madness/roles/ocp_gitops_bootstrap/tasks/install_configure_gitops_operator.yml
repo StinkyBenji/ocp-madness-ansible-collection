@@ -1,0 +1,75 @@
+---
+- name: Install OpenShift GitOps Operator
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: operators.coreos.com/v1alpha1
+      kind: Subscription
+      metadata:
+        name: openshift-gitops-operator
+        namespace: openshift-operators
+      spec:
+        channel: "{{ ocp_gitops_operator_channel }}"
+        installPlanApproval: Automatic
+        name: openshift-gitops-operator
+        source: redhat-operators
+        sourceNamespace: openshift-marketplace
+        startingCSV: "{{ ocp_gitops_operator_startingCSV }}"
+
+- name: Check if the ArgoCD instance is present
+  kubernetes.core.k8s_info:
+    api_version: argoproj.io/v1alpha1
+    kind: ArgoCD
+    name: openshift-gitops
+    namespace: openshift-gitops
+    wait: true
+    wait_timeout: 1200
+
+- name: Patch gitops route to reencrypt
+  ansible.builtin.command:
+    cmd: oc -n openshift-gitops patch argocd/openshift-gitops --type=merge -p='{"spec":{"server":{"route":{"enabled":true,"tls":{"insecureEdgeTerminationPolicy":"Redirect","termination":"reencrypt"}}}}}'
+
+- name: Patch argocd admin policy
+  ansible.builtin.command:
+    cmd:
+      oc -n openshift-gitops patch argocd/openshift-gitops --type=merge -p='{"spec":{"rbac":{"policy":"g, cluster-admins, role:admin\n g, system:cluster-admins,
+      role:admin\n g, {{ ocp_admin_group }}, role:admin"}}}'
+
+- name: Grant cluster-admin to openshift gitops application controller service account
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: ClusterRoleBinding
+      metadata:
+        name: cluster-admin-gitops
+      roleRef:
+        apiGroup: rbac.authorization.k8s.io
+        kind: ClusterRole
+        name: cluster-admin
+      subjects:
+        - kind: ServiceAccount
+          name: openshift-gitops-argocd-application-controller
+          namespace: openshift-gitops
+
+- name: Add the private GitLab Repo to the Argo CD (OpenShift GitOps) instance
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: "{{ item.name }}"
+        namespace: openshift-gitops
+        labels:
+          argocd.argoproj.io/secret-type: repository
+        annotations:
+          managed-by: argocd.argoproj.io
+      stringData:
+        name: "{{ item.name }}"
+        insecure: "true"
+        type: git
+        url: "{{ item.url }}"
+        sshPrivateKey: "{{ ocp_gitrepo_ssh_private_key }}"
+      type: Opaque
+  loop: "{{ ocp_gitrepos }}"
