@@ -1,0 +1,10 @@
+---
+- name: Converge
+  hosts: all
+  gather_facts: false
+  vars_files:
+    - ../../../vars/test_bootstrap_vars.yml
+  tasks:
+    - name: Include the playbook from collection
+      ansible.builtin.include_role:
+        name: rzh.ocp_madness.ocp_gitops_bootstrap

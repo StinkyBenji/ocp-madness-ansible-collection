@@ -50,7 +50,7 @@
           namespace: openshift-gitops
         sources:
           - repoURL: "{{ ocp_automation_repo }}"
-            path: helm-charts/charts/argocd-app-of-apps
+            path: charts/argocd-app-of-apps
             targetRevision: main
             helm:
               valueFiles:

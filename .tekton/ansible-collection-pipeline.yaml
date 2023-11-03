@@ -44,6 +44,8 @@ spec:
           - name: source
             workspace: source
         params:
+          - name: repo_url
+            value: "."
           - name: config_file_url
             value: https://raw.githubusercontent.com/tektoncd/catalog/main/task/gitleaks/0.1/samples/gitleaks.toml
           - name: config_file_path
@@ -72,8 +74,8 @@ spec:
           - name: source
             workspace: source
         params:
-          - name: manifests-path
-            value: collections/rzh/ocp_madness/roles
+          - name: molecule-path
+            value: collections/rzh/ocp_madness/extensions
 
   workspaces:
     - name: source
