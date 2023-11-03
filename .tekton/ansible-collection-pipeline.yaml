@@ -7,6 +7,7 @@ metadata:
     pipelinesascode.tekton.dev/max-keep-runs: "5"
     pipelinesascode.tekton.dev/task: "[git-clone, gitleaks]"
     pipelinesascode.tekton.dev/task-1: "[.tekton/tasks/ansible-lint.yaml]"
+    pipelinesascode.tekton.dev/task-2: "[.tekton/tasks/ansible-molecule.yaml]"
     pipelinesascode.tekton.dev/on-cel-expression: |
       (event == "push || event == "pull_request") && target_branch == "main" && ("collections/***".pathChanged() || ".tekton/ansible-collection-pipeline.yaml".pathChanged())
 spec:
@@ -61,6 +62,18 @@ spec:
         params:
           - name: manifests-path
             value: collections/
+
+      - name: ansible-molecule
+        runAfter:
+          - fetch-repository
+        taskRef:
+          name: ansible-molecule
+        workspaces:
+          - name: source
+            workspace: source
+        params:
+          - name: manifests-path
+            value: collections/rzh/ocp_madness/roles
 
   workspaces:
     - name: source

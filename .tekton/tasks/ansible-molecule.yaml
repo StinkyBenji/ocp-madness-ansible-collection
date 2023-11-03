@@ -26,14 +26,14 @@ spec:
     - name: image
       description: image to use to execute this task
       type: string
-      default: "quay.io/ansible/creator-ee"
-    - name: tag
+      default: "quay.io/ansible/creator-ee:latest"
+    - name: manifests-path
+      description: the path where stores ansible manifests to be tested
       type: string
-      description: The tag for the image.
-      default: "latest"
+      default: "."
   steps:
     - name: ansible-molecule
-      image: $(params.image):$(params.tag)
+      image: $(params.image)
       env:
         - name: HOME
           value: /tekton/home
@@ -44,4 +44,5 @@ spec:
       workingDir: $(workspaces.source.path)/$(params.context-directory)
       script: |
         #!/usr/bin/env sh
+        cd $(params.manifests-path)
         molecule test
