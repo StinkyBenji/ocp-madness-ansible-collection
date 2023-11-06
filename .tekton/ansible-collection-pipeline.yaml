@@ -5,7 +5,7 @@ metadata:
   name: ansible-collection-pipeline
   annotations:
     pipelinesascode.tekton.dev/max-keep-runs: "5"
-    pipelinesascode.tekton.dev/task: "[git-clone, gitleaks]"
+    pipelinesascode.tekton.dev/task: "[git-clone, gitleaks, pytest]"
     pipelinesascode.tekton.dev/task-1: "[.tekton/tasks/ansible-lint.yaml]"
     pipelinesascode.tekton.dev/task-2: "[.tekton/tasks/ansible-molecule.yaml]"
     pipelinesascode.tekton.dev/on-cel-expression: |
@@ -77,7 +77,7 @@ spec:
           - name: context-directory
             value: collections/rzh/ocp_madness/
           - name: molecule-path
-            value: roles/ocp_gitops_boostrap
+            value: roles/backup_file
 
   workspaces:
     - name: source
