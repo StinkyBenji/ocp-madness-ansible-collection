@@ -74,8 +74,10 @@ spec:
           - name: source
             workspace: source
         params:
+          - name: context-directory
+            value: collections/rzh/ocp_madness/
           - name: molecule-path
-            value: collections/rzh/ocp_madness/extensions
+            value: roles/ocp_gitops_boostrap
 
   workspaces:
     - name: source
