@@ -8,6 +8,9 @@ metadata:
     pipelinesascode.tekton.dev/task: "[git-clone, gitleaks, pytest]"
     pipelinesascode.tekton.dev/task-1: "[.tekton/tasks/ansible-lint.yaml]"
     pipelinesascode.tekton.dev/task-2: "[.tekton/tasks/ansible-molecule.yaml]"
+    pipelinesascode.tekton.dev/task-3: "[.tekton/tasks/ansible-collection-build.yaml]"
+    pipelinesascode.tekton.dev/task-4: "[.tekton/tasks/ansible-collection-publish.yaml]"
+    pipelinesascode.tekton.dev/task-5: "[.tekton/tasks/semantic-release.yaml]"
     pipelinesascode.tekton.dev/on-cel-expression: |
       (event == "push" || event == "pull_request") && target_branch == "main" && ("collections/***".pathChanged() || ".tekton/ansible-collection-pipeline.yaml".pathChanged())
 spec:
@@ -63,7 +66,9 @@ spec:
             workspace: source
         params:
           - name: manifests-path
-            value: collections/
+            value: ansible_collections
+          - name: context-directory
+            value: collections
 
       - name: ansible-molecule
         runAfter:
@@ -74,10 +79,52 @@ spec:
           - name: source
             workspace: source
         params:
-          - name: context-directory
-            value: collections/rzh/ocp_madness/
+          - name: ansible-collections-path
+            value: collections
           - name: molecule-path
-            value: roles/backup_file
+            value: collections/ansible_collections/example/foo/extensions
+
+      - name: ansible-collection-build
+        when:
+          - input: "{{ source_branch }}"
+            operator: in
+            values: ["main"]
+        runAfter:
+          - ansible-molecule
+        taskRef:
+          name: ansible-collection-build
+        workspaces:
+          - name: source
+            workspace: source
+        params:
+          - name: collection-path
+            value: collections/ansible_collections/example/foo
+
+      - name: ansible-collection-publish
+        when:
+          - input: "{{ source_branch }}"
+            operator: in
+            values: ["main"]
+        runAfter:
+          - ansible-collection-build
+        taskRef:
+          name: ansible-collection-publish
+        workspaces:
+          - name: source
+            workspace: source
+
+      - name: semantic-release
+        when:
+          - input: "{{ source_branch }}"
+            operator: in
+            values: ["main"]
+        runAfter:
+          - ansible-collection-build
+        taskRef:
+          name: semantic-release
+        workspaces:
+          - name: source
+            workspace: source
 
   workspaces:
     - name: source

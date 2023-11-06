@@ -23,15 +23,28 @@ spec:
       description: image to use to execute this task
       type: string
       default: "quay.io/ansible/creator-ee:latest"
-    - name: collection-path
-      description: the path to the ansible collection code
+    - name: collection-file
+      description: the name of the ansible collection tarball
       type: string
+    - name: galaxy-server-url
+      description: the galaxy API server URL where the collection will be published to.
+      type: string
+      default: "https://galaxy.ansible.com/api/"
+    - name: galaxy-api-token
+      description: the API token to authenticate against the galaxy server
+      type: string
+      default: "galaxy-api-token"
   steps:
     - name: ansible-collection-publish
       image: $(params.image)
       env:
         - name: HOME
           value: /tekton/home
+        - name: API_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: $(params.galaxy-api-token)
+              key: api-token
       resources: {}
       securityContext:
         runAsNonRoot: true
@@ -39,4 +52,4 @@ spec:
       workingDir: $(workspaces.source.path)
       script: |
         #!/usr/bin/env sh
-        ansible-galaxy collection publish $(params.collection-path) $(params.extra-args)
+        ansible-galaxy collection publish -s $(params.galaxy-server-url) --token $API-TOKEN $(params.collection-file) $(params.extra-args)
