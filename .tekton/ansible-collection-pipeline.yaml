@@ -113,6 +113,8 @@ spec:
           - name: source
             workspace: source
         params:
+          - name: collection-path
+            value: collections/ansible_collections/example/foo
           - name: collection-file
             value: $(tasks.ansible-collection-build.results.collection-file)
 
