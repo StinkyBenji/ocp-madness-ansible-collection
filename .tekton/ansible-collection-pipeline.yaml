@@ -84,21 +84,21 @@ spec:
           - name: molecule-path
             value: collections/ansible_collections/example/foo/extensions
 
-      - name: ansible-collection-build
-        when:
-          - input: "{{ source_branch }}"
-            operator: in
-            values: ["main"]
-        runAfter:
-          - ansible-molecule
-        taskRef:
-          name: ansible-collection-build
-        workspaces:
-          - name: source
-            workspace: source
-        params:
-          - name: collection-path
-            value: collections/ansible_collections/example/foo
+      # - name: ansible-collection-build
+      #   when:
+      #     - input: "{{ source_branch }}"
+      #       operator: in
+      #       values: ["main"]
+      #   runAfter:
+      #     - ansible-molecule
+      #   taskRef:
+      #     name: ansible-collection-build
+      #   workspaces:
+      #     - name: source
+      #       workspace: source
+      #   params:
+      #     - name: collection-path
+      #       value: collections/ansible_collections/example/foo
 
       # - name: ansible-collection-publish
       #   when:
