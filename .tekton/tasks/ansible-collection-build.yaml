@@ -30,6 +30,10 @@ spec:
       description: the path to the built ansible collection
       type: string
       default: "."
+  # results:
+  #   - description: the collection file just built.
+  #     name: collection-file
+  #     type: string
   steps:
     - name: ansible-collection-build
       image: $(params.image)
