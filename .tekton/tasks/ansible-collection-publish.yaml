@@ -26,6 +26,9 @@ spec:
     - name: collection-file
       description: the name of the ansible collection tarball
       type: string
+    - name: collection-path
+      description: the path to the ansible collection
+      type: string
     - name: galaxy-server-url
       description: the galaxy API server URL where the collection will be published to.
       type: string
@@ -49,7 +52,7 @@ spec:
       securityContext:
         runAsNonRoot: true
         runAsUser: 65532
-      workingDir: $(workspaces.source.path)
+      workingDir: $(workspaces.source.path)/$(params.collection-path)
       script: |
         #!/usr/bin/env sh
         ansible-galaxy collection publish -s $(params.galaxy-server-url) --token $API-TOKEN $(params.collection-file) $(params.extra-args)

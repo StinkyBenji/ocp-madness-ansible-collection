@@ -27,22 +27,17 @@ spec:
       description: the path where molecule will be executed
       type: string
       default: "."
-    - name: ansible-collections-path
-      description: the path to ansible collections
-      type: string
   steps:
     - name: ansible-molecule
       image: $(params.image)
       env:
         - name: HOME
           value: /tekton/home
-        - name: ANSIBLE_COLLECTIONS_PATH
-          value: $(workspaces.source.path)/${params.ansible-collections-path}
       resources: {}
       securityContext:
         runAsNonRoot: true
         runAsUser: 65532
-      workingDir: $(workspaces.source.path)
+      workingDir: $(workspaces.source.path)/$(params.context-directory)
       script: |
         #!/usr/bin/env sh
         echo "ansible collection path is $ANSIBLE_COLLECTIONS_PATH"

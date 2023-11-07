@@ -26,14 +26,10 @@ spec:
     - name: collection-path
       description: the path to the ansible collection code
       type: string
-    - name: output-path
-      description: the path to the built ansible collection
+  results:
+    - description: the collection file just built.
+      name: collection-file
       type: string
-      default: "."
-  # results:
-  #   - description: the collection file just built.
-  #     name: collection-file
-  #     type: string
   steps:
     - name: ansible-collection-build
       image: $(params.image)
@@ -44,7 +40,8 @@ spec:
       securityContext:
         runAsNonRoot: true
         runAsUser: 65532
-      workingDir: $(workspaces.source.path)
+      workingDir: $(workspaces.source.path)/$(params.collection-path)
       script: |
         #!/usr/bin/env sh
-        ansible-galaxy collection build $(params.collection-path) $(params.extra-args) --output-path $(params.output-path)
+        ansible-galaxy collection build $(params.extra-args)
+        find . -type f -name "*.tar.gz" | tee $(results.collection-file.path)

@@ -19,6 +19,10 @@ spec:
       value: "{{ repo_url }}"
     - name: revision
       value: "{{ revision }}"
+  podTemplate:
+    env:
+      - name: ANSIBLE_COLLECTIONS_PATH
+        value: "$(workspaces.source.path)/collections"
   pipelineSpec:
     params:
       - name: repo_url
@@ -66,9 +70,7 @@ spec:
             workspace: source
         params:
           - name: manifests-path
-            value: ansible_collections
-          - name: context-directory
-            value: collections
+            value: collections/ansible_collections/example/foo
 
       - name: ansible-molecule
         runAfter:
@@ -79,8 +81,6 @@ spec:
           - name: source
             workspace: source
         params:
-          - name: ansible-collections-path
-            value: collections
           - name: molecule-path
             value: collections/ansible_collections/example/foo/extensions
 
@@ -88,7 +88,7 @@ spec:
         when:
           - input: "{{ source_branch }}"
             operator: in
-            values: ["main"]
+            values: ["feat/ansible-test-molecule"]
         runAfter:
           - ansible-molecule
         taskRef:
@@ -100,21 +100,21 @@ spec:
           - name: collection-path
             value: collections/ansible_collections/example/foo
 
-      # - name: ansible-collection-publish
-      #   when:
-      #     - input: "{{ source_branch }}"
-      #       operator: in
-      #       values: ["main"]
-      #   runAfter:
-      #     - ansible-collection-build
-      #   taskRef:
-      #     name: ansible-collection-publish
-      #   workspaces:
-      #     - name: source
-      #       workspace: source
-      #   params:
-      #     - name: collection-file
-      #       value: $(tasks.ansible-collection-build.results.collection-file)
+      - name: ansible-collection-publish
+        when:
+          - input: "{{ source_branch }}"
+            operator: in
+            values: ["main"]
+        runAfter:
+          - ansible-collection-build
+        taskRef:
+          name: ansible-collection-publish
+        workspaces:
+          - name: source
+            workspace: source
+        params:
+          - name: collection-file
+            value: $(tasks.ansible-collection-build.results.collection-file)
 
       - name: semantic-release
         when:
