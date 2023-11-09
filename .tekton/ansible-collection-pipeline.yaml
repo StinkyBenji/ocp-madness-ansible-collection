@@ -122,7 +122,7 @@ spec:
         when:
           - input: "{{ source_branch }}"
             operator: in
-            values: ["main"]
+            values: ["feat/ansible-test-molecule"]
         runAfter:
           - generate-release-version
         taskRef:
@@ -144,39 +144,39 @@ spec:
       #   runAfter:
       #     - generate-collection-changelog
 
-      - name: ansible-collection-build
-        when:
-          - input: "{{ source_branch }}"
-            operator: in
-            values: ["main"]
-        runAfter:
-          - git-push-changelog
-        taskRef:
-          name: ansible-collection-build
-        workspaces:
-          - name: source
-            workspace: source
-        params:
-          - name: collection-path
-            value: collections/ansible_collections/example/foo
+    # - name: ansible-collection-build
+    #   when:
+    #     - input: "{{ source_branch }}"
+    #       operator: in
+    #       values: ["main"]
+    #   runAfter:
+    #     - git-push-changelog
+    #   taskRef:
+    #     name: ansible-collection-build
+    #   workspaces:
+    #     - name: source
+    #       workspace: source
+    #   params:
+    #     - name: collection-path
+    #       value: collections/ansible_collections/example/foo
 
-      - name: ansible-collection-publish
-        when:
-          - input: "{{ source_branch }}"
-            operator: in
-            values: ["main"]
-        runAfter:
-          - ansible-collection-build
-        taskRef:
-          name: ansible-collection-publish
-        workspaces:
-          - name: source
-            workspace: source
-        params:
-          - name: collection-path
-            value: collections/ansible_collections/example/foo
-          - name: collection-file
-            value: $(tasks.ansible-collection-build.results.collection-file)
+    # - name: ansible-collection-publish
+    #   when:
+    #     - input: "{{ source_branch }}"
+    #       operator: in
+    #       values: ["main"]
+    #   runAfter:
+    #     - ansible-collection-build
+    #   taskRef:
+    #     name: ansible-collection-publish
+    #   workspaces:
+    #     - name: source
+    #       workspace: source
+    #   params:
+    #     - name: collection-path
+    #       value: collections/ansible_collections/example/foo
+    #     - name: collection-file
+    #       value: $(tasks.ansible-collection-build.results.collection-file)
 
     # - name: git-push-release
     #   when:
