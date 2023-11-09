@@ -1,0 +1,5 @@
+---
+minor_changes:
+  - added molecule test to example collection
+release_summary:
+  - a small example collection that only prints out debug messages

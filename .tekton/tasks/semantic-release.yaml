@@ -23,6 +23,10 @@ spec:
     - name: source-branch
       type: string
       description: the source-branch that semantic-release will run on
+    - name: extra-args
+      type: string
+      description: extra arguments to be used for semantic-release
+      default: ""
   results:
     - description: The version to be released
       name: version
@@ -59,5 +63,5 @@ spec:
         echo "Checkout the $(params.source-branch)"
         git checkout $(params.source-branch)
         # run the semantic-release
-        npx semantic-release --no-ci --branches $(params.source-branch)
+        npx semantic-release --no-ci --branches $(params.source-branch) $(params.extra-args)
         echo -n "$(cat .VERSION)" | tee $(results.version.path)

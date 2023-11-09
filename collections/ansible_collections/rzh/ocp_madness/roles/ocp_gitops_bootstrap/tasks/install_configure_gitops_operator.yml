@@ -14,7 +14,7 @@
         name: openshift-gitops-operator
         source: redhat-operators
         sourceNamespace: openshift-marketplace
-        startingCSV: "{{ ocp_gitops_operator_startingCSV }}"
+        startingCSV: "{{ ocp_gitops_operator_startcsv }}"
 
 - name: Check if the ArgoCD instance is present
   kubernetes.core.k8s_info:

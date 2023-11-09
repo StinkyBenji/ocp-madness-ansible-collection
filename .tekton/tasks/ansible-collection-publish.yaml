@@ -1,0 +1,58 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: ansible-collection-publish
+  annotations:
+    tekton.dev/displayName: Ansible Collection Publish Tekton task
+    tekton.dev/pipelines.minVersion: 0.37.4
+    tekton.dev/tags: ansible,collection,puiblish
+  labels:
+    app.kubernetes.io/version: "0.1"
+    operator.tekton.dev/provider-type: Red Hat Community
+spec:
+  description: Tekton task for publishing ansible collection.
+  workspaces:
+    - name: source
+      description: A workspace that contains fetched git repo with ansible collection code.
+  params:
+    - name: extra-args
+      type: string
+      description: "Extra parameters to pass to ansible collection publish"
+      default: "-v"
+    - name: image
+      description: image to use to execute this task
+      type: string
+      default: "quay.io/ansible/creator-ee:latest"
+    - name: collection-file
+      description: the name of the ansible collection tarball
+      type: string
+    - name: collection-path
+      description: the path to the ansible collection
+      type: string
+    - name: galaxy-server-url
+      description: the galaxy API server URL where the collection will be published to.
+      type: string
+      default: "https://galaxy.ansible.com/api/"
+    - name: galaxy-api-token
+      description: the API token to authenticate against the galaxy server
+      type: string
+      default: "galaxy-api-token"
+  steps:
+    - name: ansible-collection-publish
+      image: $(params.image)
+      env:
+        - name: HOME
+          value: /tekton/home
+        - name: API_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: $(params.galaxy-api-token)
+              key: api-token
+      resources: {}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+      workingDir: $(workspaces.source.path)/$(params.collection-path)
+      script: |
+        #!/usr/bin/env sh
+        ansible-galaxy collection publish -s $(params.galaxy-server-url) --token $API-TOKEN $(params.collection-file) $(params.extra-args)

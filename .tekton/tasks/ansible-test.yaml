@@ -1,34 +1,33 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: ansible-molecule
+  name: ansible-test
   annotations:
-    tekton.dev/displayName: Ansible Molecule Test Tekton task
+    tekton.dev/displayName: Ansible test Tekton task
     tekton.dev/pipelines.minVersion: 0.37.4
-    tekton.dev/tags: ansible,test,molecule,qa
+    tekton.dev/tags: ansible,test,qa
   labels:
     app.kubernetes.io/version: "0.1"
     operator.tekton.dev/provider-type: Red Hat Community
 spec:
-  description: Tekton task for running molecule test for ansible manifests.
+  description: Tekton task for testing ansible collections or roles.
   workspaces:
     - name: source
-      description: A workspace that contains fetched git repo with ansible manifests defining elements to be tested.
+      description: A workspace that contains fetched git repo with ansible manifests defining elements to be linted.
   params:
     - name: context-directory
       type: string
-      description: "Context directory within the source repository in which we want to execute molecule."
+      description: "Context directory within the source repository in which we want to execute ansible-test."
       default: "."
+    - name: test-args
+      type: string
+      description: "parameters to pass to ansible-test, e.g. sanity, integration"
     - name: image
       description: image to use to execute this task
       type: string
       default: "quay.io/ansible/creator-ee:latest"
-    - name: molecule-path
-      description: the path where molecule will be executed
-      type: string
-      default: "."
   steps:
-    - name: ansible-molecule
+    - name: ansible-test
       image: $(params.image)
       env:
         - name: HOME
@@ -40,6 +39,5 @@ spec:
       workingDir: $(workspaces.source.path)/$(params.context-directory)
       script: |
         #!/usr/bin/env sh
-        echo "ansible collection path is $ANSIBLE_COLLECTIONS_PATH"
-        cd $(params.molecule-path)
-        molecule test
+        git config --global --add safe.directory $(workspaces.source.path)
+        ansible-test $(params.test-args)

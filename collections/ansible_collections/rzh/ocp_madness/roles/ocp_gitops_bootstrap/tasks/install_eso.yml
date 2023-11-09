@@ -14,7 +14,7 @@
         name: external-secrets-operator
         source: community-operators
         sourceNamespace: openshift-marketplace
-        startingCSV: "{{ ocp_eso_startingCSV }}"
+        startingCSV: "{{ ocp_eso_startcsv }}"
 
 - name: Wait for the operator being installed successfully
   kubernetes.core.k8s_info:

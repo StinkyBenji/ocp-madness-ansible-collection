@@ -5,17 +5,27 @@ metadata:
   name: ansible-collection-pipeline
   annotations:
     pipelinesascode.tekton.dev/max-keep-runs: "5"
-    pipelinesascode.tekton.dev/task: "[git-clone, gitleaks]"
+    pipelinesascode.tekton.dev/task: "[git-clone, gitleaks, pytest]"
     pipelinesascode.tekton.dev/task-1: "[.tekton/tasks/ansible-lint.yaml]"
-    pipelinesascode.tekton.dev/task-2: "[.tekton/tasks/ansible-molecule.yaml]"
+    pipelinesascode.tekton.dev/task-2: "[.tekton/tasks/ansible-test.yaml]"
+    pipelinesascode.tekton.dev/task-3: "[.tekton/tasks/ansible-molecule.yaml]"
+    pipelinesascode.tekton.dev/task-4: "[.tekton/tasks/semantic-release.yaml]"
+    pipelinesascode.tekton.dev/task-5: "[.tekton/tasks/antsibull-changelog.yaml]"
+    pipelinesascode.tekton.dev/task-6: "[.tekton/tasks/git-push-changelog.yaml]"
+    pipelinesascode.tekton.dev/task-7: "[.tekton/tasks/ansible-collection-build.yaml]"
+    pipelinesascode.tekton.dev/task-8: "[.tekton/tasks/ansible-collection-publish.yaml]"
     pipelinesascode.tekton.dev/on-cel-expression: |
-      (event == "push || event == "pull_request") && target_branch == "main" && ("collections/***".pathChanged() || ".tekton/ansible-collection-pipeline.yaml".pathChanged())
+      (event == "push" || event == "pull_request") && target_branch == "main" && ("collections/***".pathChanged() || ".tekton/ansible-collection-pipeline.yaml".pathChanged())
 spec:
   params:
     - name: repo_url
       value: "{{ repo_url }}"
     - name: revision
       value: "{{ revision }}"
+  podTemplate:
+    env:
+      - name: ANSIBLE_COLLECTIONS_PATH
+        value: "$(workspaces.source.path)/collections"
   pipelineSpec:
     params:
       - name: repo_url
@@ -44,6 +54,8 @@ spec:
           - name: source
             workspace: source
         params:
+          - name: repo_path
+            value: "."
           - name: config_file_url
             value: https://raw.githubusercontent.com/tektoncd/catalog/main/task/gitleaks/0.1/samples/gitleaks.toml
           - name: config_file_path
@@ -61,7 +73,7 @@ spec:
             workspace: source
         params:
           - name: manifests-path
-            value: collections/
+            value: collections/ansible_collections/example/foo
 
       - name: ansible-molecule
         runAfter:
@@ -72,8 +84,124 @@ spec:
           - name: source
             workspace: source
         params:
-          - name: manifests-path
-            value: collections/rzh/ocp_madness/roles
+          - name: molecule-path
+            value: collections/ansible_collections/example/foo/extensions
+
+      - name: ansible-sanity-test
+        runAfter:
+          - fetch-repository
+        taskRef:
+          name: ansible-test
+        workspaces:
+          - name: source
+            workspace: source
+        params:
+          - name: test-args
+            value: "sanity -v --color --requirements --exclude extensions/molecule/ --exclude changelogs/ --skip-test symlinks"
+          - name: context-directory
+            value: "collections/ansible_collections/example/foo"
+
+      - name: generate-release-version
+        when:
+          - input: "{{ source_branch }}"
+            operator: in
+            values: ["main"]
+        runAfter:
+          - ansible-molecule
+        taskRef:
+          name: semantic-release
+        workspaces:
+          - name: source
+            workspace: source
+        params:
+          - name: source-branch
+            value: "{{ source_branch }}"
+          - name: extra-args
+            value: "--dry-run"
+
+      - name: generate-collection-changelog
+        when:
+          - input: "{{ source_branch }}"
+            operator: in
+            values: ["main"]
+        runAfter:
+          - generate-release-version
+        taskRef:
+          name: antsibull-changelog
+        workspaces:
+          - name: source
+            workspace: source
+        params:
+          - name: version
+            value: $(tasks.generate-release-version.results.version)
+          - name: collection-path
+            value: "collections/ansible_collections/example/foo"
+
+      - name: push-collection-changelog
+        when:
+          - input: "{{ source_branch }}"
+            operator: in
+            values: ["main"]
+        runAfter:
+          - generate-collection-changelog
+        taskRef:
+          name: git-push-changelog
+        workspaces:
+          - name: source
+            workspace: source
+        params:
+          - name: context-directory
+            value: "collections/ansible_collections/example/foo"
+
+      - name: ansible-collection-build
+        when:
+          - input: "{{ source_branch }}"
+            operator: in
+            values: ["main"]
+        runAfter:
+          - push-collection-changelog
+        taskRef:
+          name: ansible-collection-build
+        workspaces:
+          - name: source
+            workspace: source
+        params:
+          - name: collection-path
+            value: collections/ansible_collections/example/foo
+
+      - name: ansible-collection-publish
+        when:
+          - input: "{{ source_branch }}"
+            operator: in
+            values: ["main"]
+        runAfter:
+          - ansible-collection-build
+        taskRef:
+          name: ansible-collection-publish
+        workspaces:
+          - name: source
+            workspace: source
+        params:
+          - name: collection-path
+            value: collections/ansible_collections/example/foo
+          - name: collection-file
+            value: $(tasks.ansible-collection-build.results.collection-file)
+
+      - name: git-release
+        when:
+          - input: "{{ source_branch }}"
+            operator: in
+            values: ["main"]
+        runAfter:
+          - ansible-collection-build
+        taskRef:
+          name: semantic-release
+        workspaces:
+          - name: source
+            workspace: source
+        params:
+          - name: source-branch
+            value: "{{ source_branch }}"
 
   workspaces:
     - name: source
