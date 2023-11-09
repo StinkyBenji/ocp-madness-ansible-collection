@@ -17,5 +17,8 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/StinkyBenji/ansible-tekton-demo.git"
+  },
+  "dependencies": {
+    "@semantic-release/exec": "^6.0.3"
   }
 }

@@ -43,4 +43,5 @@ spec:
       script: |
         #!/usr/bin/env sh
         pip install antsibull-changelog
+        export PATH=$PATH:/tekton/home/.local/bin
         antsibull-changelog release $(params.extra-args) --version $(params.version)
