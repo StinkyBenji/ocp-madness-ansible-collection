@@ -7,10 +7,12 @@ metadata:
     pipelinesascode.tekton.dev/max-keep-runs: "5"
     pipelinesascode.tekton.dev/task: "[git-clone, gitleaks, pytest]"
     pipelinesascode.tekton.dev/task-1: "[.tekton/tasks/ansible-lint.yaml]"
-    pipelinesascode.tekton.dev/task-2: "[.tekton/tasks/ansible-molecule.yaml]"
-    pipelinesascode.tekton.dev/task-3: "[.tekton/tasks/ansible-collection-build.yaml]"
-    pipelinesascode.tekton.dev/task-4: "[.tekton/tasks/ansible-collection-publish.yaml]"
-    pipelinesascode.tekton.dev/task-5: "[.tekton/tasks/semantic-release.yaml]"
+    pipelinesascode.tekton.dev/task-2: "[.tekton/tasks/ansible-test.yaml]"
+    pipelinesascode.tekton.dev/task-3: "[.tekton/tasks/ansible-molecule.yaml]"
+    pipelinesascode.tekton.dev/task-4: "[.tekton/tasks/semantic-release.yaml]"
+    pipelinesascode.tekton.dev/task-5: "[.tekton/tasks/antsibull-changelog.yaml]"
+    pipelinesascode.tekton.dev/task-6: "[.tekton/tasks/ansible-collection-build.yaml]"
+    pipelinesascode.tekton.dev/task-7: "[.tekton/tasks/ansible-collection-publish.yaml]"
     pipelinesascode.tekton.dev/on-cel-expression: |
       (event == "push" || event == "pull_request") && target_branch == "main" && ("collections/***".pathChanged() || ".tekton/ansible-collection-pipeline.yaml".pathChanged())
 spec:
@@ -84,13 +86,71 @@ spec:
           - name: molecule-path
             value: collections/ansible_collections/example/foo/extensions
 
+      - name: ansible-sanity-test
+        runAfter:
+          - fetch-repository
+        taskRef:
+          name: ansible-test
+        workspaces:
+          - name: source
+            workspace: source
+        params:
+          - name: test-args
+            value: "sanity -v --color --requirements --exclude extensions/molecule/ --skip-test symlinks"
+          - name: context-directory
+            value: "collections/ansible_collections/example/foo"
+
+      - name: generate-release-version
+        when:
+          - input: "{{ source_branch }}"
+            operator: in
+            values: ["main"]
+        runAfter:
+          - ansible-molecule
+        taskRef:
+          name: semantic-release
+        workspaces:
+          - name: source
+            workspace: source
+        params:
+          - name: source-branch
+            value: "{{ source_branch }}"
+          - name: extra-args
+            value: "--dry-run"
+
+      - name: generate-collection-changelog
+        when:
+          - input: "{{ source_branch }}"
+            operator: in
+            values: ["main"]
+        runAfter:
+          - generate-release-tag
+        taskRef:
+          name: antsibull-changelog
+        workspaces:
+          - name: source
+            workspace: source
+        params:
+          - name: version
+            value: $(tasks.generate-release-version.results.version)
+          - name: collection-path
+            value: "collections/ansible_collections/example/foo"
+
+      # - name: git-push-changelog
+      #   when:
+      #     - input: "{{ source_branch }}"
+      #       operator: in
+      #       values: ["main"]
+      #   runAfter:
+      #     - generate-collection-changelog
+
       - name: ansible-collection-build
         when:
           - input: "{{ source_branch }}"
             operator: in
-            values: ["feat/ansible-test-molecule"]
+            values: ["main"]
         runAfter:
-          - ansible-molecule
+          - git-push-changelog
         taskRef:
           name: ansible-collection-build
         workspaces:
@@ -118,21 +178,18 @@ spec:
           - name: collection-file
             value: $(tasks.ansible-collection-build.results.collection-file)
 
-      - name: semantic-release
-        when:
-          - input: "{{ source_branch }}"
-            operator: in
-            values: ["main"]
-        runAfter:
-          - ansible-collection-build
-        taskRef:
-          name: semantic-release
-        workspaces:
-          - name: source
-            workspace: source
-        params:
-          - name: source-branch
-            value: "{{ source_branch }}"
+    # - name: git-push-release
+    #   when:
+    #     - input: "{{ source_branch }}"
+    #       operator: in
+    #       values: ["main"]
+    #   runAfter:
+    #     - ansible-collection-build
+    #   taskRef:
+    #     name: git-release
+    #   workspaces:
+    #     - name: source
+    #       workspace: source
 
   workspaces:
     - name: source

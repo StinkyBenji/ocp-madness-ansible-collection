@@ -22,11 +22,6 @@ spec:
     - name: test-args
       type: string
       description: "parameters to pass to ansible-test, e.g. sanity, integration"
-      default: "sanity"
-    - name: collection-path
-      type: string
-      description: "Path to ansible collection to be tested."
-      default: ""
     - name: image
       description: image to use to execute this task
       type: string
@@ -44,4 +39,4 @@ spec:
       workingDir: $(workspaces.source.path)/$(params.context-directory)
       script: |
         #!/usr/bin/env sh
-        ansible-test $(params.test-args) $(params.collection-path)
+        ansible-test $(params.test-args)
