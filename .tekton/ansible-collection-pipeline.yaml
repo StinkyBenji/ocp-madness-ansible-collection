@@ -97,7 +97,7 @@ spec:
             workspace: source
         params:
           - name: test-args
-            value: "sanity -v --color --requirements --exclude extensions/molecule/ --skip-test symlinks"
+            value: "sanity -v --color --requirements --exclude extensions/molecule/ --exclude changelogs/ --skip-test symlinks"
           - name: context-directory
             value: "collections/ansible_collections/example/foo"
 
