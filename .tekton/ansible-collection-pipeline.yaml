@@ -11,8 +11,9 @@ metadata:
     pipelinesascode.tekton.dev/task-3: "[.tekton/tasks/ansible-molecule.yaml]"
     pipelinesascode.tekton.dev/task-4: "[.tekton/tasks/semantic-release.yaml]"
     pipelinesascode.tekton.dev/task-5: "[.tekton/tasks/antsibull-changelog.yaml]"
-    pipelinesascode.tekton.dev/task-6: "[.tekton/tasks/ansible-collection-build.yaml]"
-    pipelinesascode.tekton.dev/task-7: "[.tekton/tasks/ansible-collection-publish.yaml]"
+    pipelinesascode.tekton.dev/task-6: "[.tekton/tasks/git-push-changelog.yaml]"
+    pipelinesascode.tekton.dev/task-7: "[.tekton/tasks/ansible-collection-build.yaml]"
+    pipelinesascode.tekton.dev/task-8: "[.tekton/tasks/ansible-collection-publish.yaml]"
     pipelinesascode.tekton.dev/on-cel-expression: |
       (event == "push" || event == "pull_request") && target_branch == "main" && ("collections/***".pathChanged() || ".tekton/ansible-collection-pipeline.yaml".pathChanged())
 spec:
@@ -104,7 +105,7 @@ spec:
         when:
           - input: "{{ source_branch }}"
             operator: in
-            values: ["feat/ansible-test-molecule"]
+            values: ["main"]
         runAfter:
           - ansible-molecule
         taskRef:
@@ -122,7 +123,7 @@ spec:
         when:
           - input: "{{ source_branch }}"
             operator: in
-            values: ["feat/ansible-test-molecule"]
+            values: ["main"]
         runAfter:
           - generate-release-version
         taskRef:
@@ -132,9 +133,24 @@ spec:
             workspace: source
         params:
           - name: version
-            value: 0.0.0
-            # value: $(tasks.generate-release-version.results.version)
+            value: $(tasks.generate-release-version.results.version)
           - name: collection-path
+            value: "collections/ansible_collections/example/foo"
+
+      - name: push-collection-changelog
+        when:
+          - input: "{{ source_branch }}"
+            operator: in
+            values: ["main"]
+        runAfter:
+          - generate-collection-changelog
+        taskRef:
+          name: git-push-changelog
+        workspaces:
+          - name: source
+            workspace: source
+        params:
+          - name: context-directory
             value: "collections/ansible_collections/example/foo"
 
       - name: ansible-collection-build
@@ -143,7 +159,7 @@ spec:
             operator: in
             values: ["main"]
         runAfter:
-          - generate-collection-changelog
+          - push-collection-changelog
         taskRef:
           name: ansible-collection-build
         workspaces:
