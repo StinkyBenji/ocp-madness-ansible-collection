@@ -39,4 +39,5 @@ spec:
       workingDir: $(workspaces.source.path)/$(params.context-directory)
       script: |
         #!/usr/bin/env sh
+        git config --global --add safe.directory $(workspaces.source.path)
         ansible-test $(params.test-args)
