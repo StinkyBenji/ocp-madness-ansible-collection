@@ -30,7 +30,7 @@ spec:
       description: the release version of the ansible collection
       type: string
   steps:
-    - name: ansible-collection-build
+    - name: create-changelog
       image: $(params.image)
       env:
         - name: HOME
