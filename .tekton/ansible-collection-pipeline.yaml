@@ -124,7 +124,7 @@ spec:
             operator: in
             values: ["main"]
         runAfter:
-          - generate-release-tag
+          - generate-release-version
         taskRef:
           name: antsibull-changelog
         workspaces:
