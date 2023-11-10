@@ -14,6 +14,7 @@ metadata:
     pipelinesascode.tekton.dev/task-6: "[.tekton/tasks/git-push-changelog.yaml]"
     pipelinesascode.tekton.dev/task-7: "[.tekton/tasks/ansible-collection-build.yaml]"
     pipelinesascode.tekton.dev/task-8: "[.tekton/tasks/ansible-collection-publish.yaml]"
+    pipelinesascode.tekton.dev/task-9: "[.tekton/tasks/git-push-tag.yaml]"
     pipelinesascode.tekton.dev/on-cel-expression: |
       (event == "push" || event == "pull_request") && target_branch == "main" && ("collections/***".pathChanged() || ".tekton/ansible-collection-pipeline.yaml".pathChanged())
 spec:
