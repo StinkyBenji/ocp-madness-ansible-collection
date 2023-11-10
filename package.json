@@ -7,5 +7,9 @@
     "@semantic-release/github": "^9.2.3",
     "@semantic-release/release-notes-generator": "^12.1.0",
     "semantic-release": "^22.0.7"
+  },
+  "dependencies": {
+    "@commitlint/cli": "^18.4.0",
+    "@commitlint/config-conventional": "^18.4.0"
   }
 }
