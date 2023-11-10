@@ -1,24 +1,11 @@
 {
-  "name": "ansible-tekton-pipelines",
-  "version": "1.0.0-development",
-  "description": "Tekton pipelines for building and releasing ansible execution environment and ansible collection",
   "devDependencies": {
-    "@codedependant/semantic-release-docker": "^4.5.0",
-    "@commitlint/cli": "^18.2.0",
-    "@commitlint/config-conventional": "^18.1.0",
     "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/commit-analyzer": "^11.1.0",
+    "@semantic-release/exec": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
-    "@semantic-release/github": "^9.2.1",
-    "semantic-release": "^22.0.5"
-  },
-  "scripts": {
-    "semantic-release": "semantic-release"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/StinkyBenji/ansible-tekton-demo.git"
-  },
-  "dependencies": {
-    "@semantic-release/exec": "^6.0.3"
+    "@semantic-release/github": "^9.2.3",
+    "@semantic-release/release-notes-generator": "^12.1.0",
+    "semantic-release": "^22.0.7"
   }
 }
