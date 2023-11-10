@@ -62,6 +62,12 @@ spec:
         git fetch origin
         echo "Checkout the $(params.source-branch)"
         git checkout $(params.source-branch)
+        git pull
         # run the semantic-release
         npx semantic-release --no-ci --branches $(params.source-branch) $(params.extra-args)
-        echo -n "$(cat .VERSION)" | tee $(results.version.path)
+        if test -f ".VERSION"; then
+          echo -n "$(cat .VERSION)" | tee /tekton/results/version
+        else
+          echo "no .VERSION file exists."
+          exit 1
+        fi

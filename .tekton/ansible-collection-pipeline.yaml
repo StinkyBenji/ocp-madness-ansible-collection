@@ -169,6 +169,7 @@ spec:
           - name: collection-path
             value: collections/ansible_collections/example/foo
 
+      # The collection publish task is expected to fail because I don't want to publish anything
       - name: ansible-collection-publish
         when:
           - input: "{{ source_branch }}"
@@ -187,21 +188,22 @@ spec:
           - name: collection-file
             value: $(tasks.ansible-collection-build.results.collection-file)
 
-      - name: git-release
-        when:
-          - input: "{{ source_branch }}"
-            operator: in
-            values: ["main"]
-        runAfter:
-          - ansible-collection-build
-        taskRef:
-          name: semantic-release
-        workspaces:
-          - name: source
-            workspace: source
-        params:
-          - name: source-branch
-            value: "{{ source_branch }}"
+      # Commented out because I don't want to do git release at the moment
+      # - name: git-release
+      #   when:
+      #     - input: "{{ source_branch }}"
+      #       operator: in
+      #       values: ["main"]
+      #   runAfter:
+      #     - ansible-collection-build
+      #   taskRef:
+      #     name: semantic-release
+      #   workspaces:
+      #     - name: source
+      #       workspace: source
+      #   params:
+      #     - name: source-branch
+      #       value: "{{ source_branch }}"
 
   workspaces:
     - name: source
