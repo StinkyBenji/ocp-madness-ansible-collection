@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: git-push-changelog
+  name: git-push-tag
   annotations:
     tekton.dev/pipelines.minVersion: 0.37.4
     tekton.dev/tags: git
@@ -9,15 +9,18 @@ metadata:
     app.kubernetes.io/version: "0.1"
     operator.tekton.dev/provider-type: community
 spec:
-  description: This Task can be used to push/update ansible collection changelogs in a Git repo. It requires a secret with credentials for accessing the git repo.
+  description: This Task can be used to push the tag in a Git repo.
   params:
     - name: context-directory
       type: string
-      description: "Context directory within the source repository in which we want to commit and push the changelog."
+      description: Context directory within the source repository
       default: "."
+    - name: tag
+      type: string
+      description: The tag to be pushed to git repo
   steps:
     - image: docker.io/alpine/git:v2.26.2
-      name: git-push-changelog
+      name: git-push-tag
       env:
         - name: HOME
           value: /tekton/home
@@ -31,10 +34,8 @@ spec:
         git config --global --add safe.directory $(workspaces.workspace.path)
         git config user.email "tektonbot@redhat.com"
         git config user.name "Tekton Bot"
-        git status
-        git add .
-        git commit -am "[ci] changelog updated"
-        git push
+        git tag $(params.tag)
+        git push origin $(params.tag)
   workspaces:
     - description: The workspace where contains ansible collection code.
       name: source
