@@ -6,7 +6,7 @@ exclude_paths:
   - .github/
   - .tekton/
   - .vscode/
-
+  - changelogs/
 parseable: true
 
 var_naming_pattern: "^[a-z_][a-z0-9_]*$"

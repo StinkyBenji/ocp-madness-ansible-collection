@@ -18,7 +18,7 @@ spec:
     - name: extra-args
       type: string
       description: "Extra parameters to pass to ansible collection publish"
-      default: "-v"
+      default: "-vvv"
     - name: image
       description: image to use to execute this task
       type: string
