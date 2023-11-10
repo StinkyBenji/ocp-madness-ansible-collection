@@ -1,0 +1,11 @@
+ancestor: null
+releases:
+  1.0.0:
+    changes:
+      minor_changes:
+      - added molecule test to example collection
+      release_summary: Initial release
+    fragments:
+    - minor.yml
+    - release-summary.yml
+    release_date: '2023-11-10'
