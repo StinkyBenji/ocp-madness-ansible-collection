@@ -32,6 +32,8 @@ spec:
       script: |
         #!/usr/bin/env sh
         git config --global --add safe.directory $(workspaces.source.path)
+        git config user.email "tektonbot@redhat.com"
+        git config user.name "My Tekton Bot"
         git tag $(params.tag)
         git push origin $(params.tag)
   workspaces:
