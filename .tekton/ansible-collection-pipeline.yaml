@@ -156,9 +156,9 @@ spec:
 
       - name: ansible-collection-build
         when:
-          - input: "{{ source_branch }}"
+          - input: "{{ body.push.user.email }}"
             operator: in
-            values: ["main"]
+            values: ["tektonbot@redhat.com"]
         runAfter:
           - push-collection-changelog
         taskRef:

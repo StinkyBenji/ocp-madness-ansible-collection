@@ -33,7 +33,7 @@ spec:
         git config user.name "My Tekton Bot"
         git status
         git add .
-        git commit -am "[ci] changelog updated"
+        git commit -am "ci: changelog updated"
         git push
   workspaces:
     - description: The workspace where contains ansible collection code.
