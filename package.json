@@ -9,7 +9,7 @@
     "semantic-release": "^22.0.7"
   },
   "dependencies": {
-    "@commitlint/cli": "^18.4.0",
-    "@commitlint/config-conventional": "^18.4.0"
+    "@commitlint/cli": "^19.0.0",
+    "@commitlint/config-conventional": "^19.0.0"
   }
 }
